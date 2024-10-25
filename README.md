@@ -1,1 +1,2 @@
-internet üzerindeki cs skinlerini tarayarak kar getirebilecek potansiyelde olanları kaydediyor. aynı zamanda kullanıcıya haber veriyor. kullanmak için gerekli kütüphaneleri indirip çalıştırmanız yeterli.
+Bynogame üzerinden cs skinlerini okuyor ve istenen özelliklere sahip yeni satışa çıkarılan ürünleri bildirim olarak kullanıcıya gönderiyor. Detaylı filtre sayesinde istediğiniz fiyat/indirim/float değerlerine sahip ürünleri rahatlıkla bulabiliyorsunuz. Kodun çeşitli amaçlarla kullanımında lütfen credit verin.
+-Pusat
