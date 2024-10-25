@@ -1,0 +1,1 @@
+internet üzerindeki cs skinlerini tarayarak kar getirebilecek potansiyelde olanları kaydediyor. aynı zamanda kullanıcıya haber veriyor. kullanmak için gerekli kütüphaneleri indirip çalıştırmanız yeterli.
