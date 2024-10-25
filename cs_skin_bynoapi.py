@@ -34,7 +34,7 @@ def check_for_new_products():
             if ((min_price <= product_price <= max_price and (discount_percentage >= min_discount) and product_name not in seen_products)
             or (min_floatprice <= product_price <= max_price and -1 < float_value < max_float
             and product_name not in seen_products)):
-                seen_products.add(product_name)  # Ürünü kaydet
+                seen_products.add(product.get('listingNo', 'Bilinmeyen ID'))  # Ürünü kaydet
                 
                 # Şu anki zamanı al
                 current_time = datetime.now().strftime("%H:%M:%S")
