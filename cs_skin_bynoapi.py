@@ -30,12 +30,11 @@ def check_for_new_products():
             discount_percentage = product.get('discountRate', 0)
             product_price = product.get('price', 0)  # Fiyatı TL olarak almak için
             float_value = float(product.get('info', {}).get('float', 1))  # Float değeri varsayılan olarak 1
-            
-            if ((min_price <= product_price <= max_price and (discount_percentage >= min_discount) and product_name not in seen_products)
-            or (min_floatprice <= product_price <= max_price and -1 < float_value < max_float
-            and product_name not in seen_products)):
-                seen_products.add(product.get('listingNo', 'Bilinmeyen ID'))  # Ürünü kaydet
-                
+            product_ID = product.get('listingNo', 'ID Numarası')
+
+            if ((min_price <= product_price <= max_price and (discount_percentage >= min_discount) and product_ID not in seen_products)
+            or (min_floatprice <= product_price <= max_price and -1 < float_value < max_float and product_ID not in seen_products)):
+                seen_products.add(product_ID)  # Ürünü kaydet
                 # Şu anki zamanı al
                 current_time = datetime.now().strftime("%H:%M:%S")
                 
