@@ -7,8 +7,8 @@ from datetime import datetime
 min_discount = 25           # Minimum indirim oranı
 min_price = 50              # Minimum fiyat (sadece indirim oranı için)
 min_floatprice = 0          # Minimum fiyat (sadece float değeri için)
-max_price = 500             # Maksimum fiyat (hem float hem indirim için)
-max_float = 0.005            # Maksimum float değeri (float filtresini kapatmak için 0.00)
+max_price = 1000            # Maksimum fiyat (hem float hem indirim için)
+max_float = 0.005           # Maksimum float değeri (float filtresini kapatmak için 0.00)
 
 # Daha önce görülen ürünlerin listesi
 seen_products = set()
@@ -31,8 +31,16 @@ def check_for_new_products():
             product_price = product.get('price', 0)  # Fiyatı TL olarak almak için
             float_value = float(product.get('info', {}).get('float', 1))  # Float değeri varsayılan olarak 1
             product_ID = product.get('listingNo', 'ID Numarası')
+            
+            # Sticker isimlerini alıp "Sticker | " kısmını kaldırın
+            stickers = product.get('info', {}).get('stickerNames', 'Sticker Yok')
+            if stickers != 'Sticker Yok':
+                stickers = stickers.replace("Sticker | ", "")
 
-            if ((min_price <= product_price <= max_price and (discount_percentage >= min_discount) and product_ID not in seen_products)
+            # Float değeri 0'ın altındaysa "Float bilgisi yok" olarak göster
+            float_text = f"Float: {float_value}" if float_value >= 0 else "Float bilgisi yok"
+
+            if ((min_price <= product_price <= max_price and discount_percentage >= min_discount and product_ID not in seen_products)
             or (min_floatprice <= product_price <= max_price and -1 < float_value < max_float and product_ID not in seen_products)):
                 seen_products.add(product_ID)  # Ürünü kaydet
                 # Şu anki zamanı al
@@ -40,11 +48,13 @@ def check_for_new_products():
                 
                 # Bildirim gönder
                 notification.notify(
-                    title="Yeni Ürün Bulundu!\n",
-                    message=f"{product_name}\nFloat: {float_value}\nFiyat: {product_price:.2f}TL\n%{discount_percentage} indirim\n")
+                    # Mesaj başlığını aktif hale getirmek için alt satırı kullanın
+                    # title="Yeni Ürün Bulundu!",
+                    message=f"{product_name}\n{stickers}\n{float_text}\nFiyat: {product_price:.2f}TL\n%{discount_percentage} indirim\n"
+                )
                 
                 # Konsola yazdır (isim, indirim, fiyat, float değeri ve saat bilgisi)
-                print(f"{current_time} - {product_name}\nFloat: {float_value}\nFiyat: {product_price:.2f}TL\n%{discount_percentage} indirim\n")
+                print(f"{current_time} - {product_name}\n{stickers}\n{float_text}\nFiyat: {product_price:.2f}TL\n%{discount_percentage} indirim\n")
     
     except Exception as e:
         print(f"Bir hata oluştu: {e}")
