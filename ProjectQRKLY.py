@@ -6,60 +6,95 @@ from datetime import datetime
 ### Kullanıcı ayarları
 min_discount = 25           # Minimum indirim oranı
 min_price = 50              # Minimum fiyat (sadece indirim oranı için)
-min_floatprice = 0          # Minimum fiyat (sadece float değeri için)
-max_price = 1000            # Maksimum fiyat (hem float hem indirim için)
+min_otherprice = 0          # Minimum fiyat (diğer filtreler için)
+max_price = 1000            # Maksimum fiyat (tüm filtreler için)
 max_float = 0.005           # Maksimum float değeri (float filtresini kapatmak için 0.00)
 
 # Daha önce görülen ürünlerin listesi
-seen_products = set()
+seen_products_discount = set()
+seen_products_float = set()
+seen_products_stickers = set()
 
 # Yeni ürünleri kontrol eden fonksiyon
-def check_for_new_products():
-    url = "https://listing.bynogame.net/api/listings/cs2?page=0&limit=1000"
-    
-    try:
-        response = requests.get(url)
-        data = response.json()
-        
-        # "payload" altında ürün verilerini al
-        products = data.get('payload', [])
+def check_for_new_discount_products(products):
+    for product in products:
+        product_name = product.get('name', 'Bilinmeyen Ürün')
+        discount_percentage = product.get('discountRate', 0)
+        product_price = product.get('price', 0)
+        float_value = float(product.get('info', {}).get('float', 1))
+        product_ID = product.get('listingNo', 'ID Numarası')
 
-        # Her ürünü kontrol et
-        for product in products:
-            product_name = product.get('name', 'Bilinmeyen Ürün')
-            discount_percentage = product.get('discountRate', 0)
-            product_price = product.get('price', 0)  # Fiyatı TL olarak almak için
-            float_value = float(product.get('info', {}).get('float', 1))  # Float değeri varsayılan olarak 1
-            product_ID = product.get('listingNo', 'ID Numarası')
+        if min_price <= product_price <= max_price and discount_percentage >= min_discount and product_ID not in seen_products_discount:
+            seen_products_discount.add(product_ID)
+            current_time = datetime.now().strftime("%H:%M:%S")
             
-            # Sticker isimlerini alıp "Sticker | " kısmını kaldırın
-            stickers = product.get('info', {}).get('stickerNames', 'Sticker Yok')
-            if stickers != 'Sticker Yok':
-                stickers = stickers.replace("Sticker | ", "")
+            notification.notify(
+                title=f"İndirimli Ürün!",
+                message=f"{product_name}\nFloat: {float_value}\nFiyat: {product_price:.2f}TL\n%{discount_percentage} indirim\n"
+            )
+            
+            print(f"{current_time} - Indirim \n{product_name}\nFloat: {float_value}\nFiyat: {product_price:.2f}TL\n%{discount_percentage} indirim\n")
 
-            # Float değeri 0'ın altındaysa "Float bilgisi yok" olarak göster
-            float_text = f"Float: {float_value}" if float_value >= 0 else "Float bilgisi yok"
+def check_for_new_float_products(products):
+    for product in products:
+        product_name = product.get('name', 'Bilinmeyen Ürün')
+        discount_percentage = product.get('discountRate', 0)
+        product_price = product.get('price', 0)
+        float_value = float(product.get('info', {}).get('float', 1))
+        product_ID = product.get('listingNo', 'ID Numarası')
 
-            if ((min_price <= product_price <= max_price and discount_percentage >= min_discount and product_ID not in seen_products)
-            or (min_floatprice <= product_price <= max_price and -1 < float_value < max_float and product_ID not in seen_products)):
-                seen_products.add(product_ID)  # Ürünü kaydet
-                # Şu anki zamanı al
+        if min_otherprice <= product_price <= max_price and -1 < float_value < max_float and product_ID not in seen_products_float:
+            seen_products_float.add(product_ID)
+            current_time = datetime.now().strftime("%H:%M:%S")
+            
+            notification.notify(
+                title=f"Float Değeri Düşük Ürün!",
+                message=f"{product_name}\nFloat: {float_value}\nFiyat: {product_price:.2f}TL\n%{discount_percentage} indirim\n"
+            )
+            
+            print(f"{current_time} - Float \n{product_name}\nFloat: {float_value}\nFiyat: {product_price:.2f}TL\n%{discount_percentage} indirim\n")
+
+def check_for_sticker_products(products):
+    for product in products:
+        product_name = product.get('name', 'Bilinmeyen Ürün')
+        discount_percentage = product.get('discountRate', 0)
+        product_price = product.get('price', 0)
+        product_ID = product.get('listingNo', 'ID Numarası')
+
+        # Sticker isimlerini al ve "Sticker | " kısmını kaldır
+        stickers = product.get('info', {}).get('stickerNames', 'Sticker Yok')
+        if stickers != 'Sticker Yok':
+            stickers = stickers.replace("Sticker | ", "")
+
+        # "souvenir" içermeyen ürün isimleri ve değerli sticker kriterini sağlayanlar
+        if ('2014' in stickers or '2015' in stickers) and product_ID not in seen_products_stickers and 'souvenir' not in product_name.lower():
+            if min_otherprice <= product_price <= max_price:
+                seen_products_stickers.add(product_ID)
                 current_time = datetime.now().strftime("%H:%M:%S")
                 
-                # Bildirim gönder
                 notification.notify(
-                    # Mesaj başlığını aktif hale getirmek için alt satırı kullanın
-                    # title="Yeni Ürün Bulundu!",
-                    message=f"{product_name}\n{stickers}\n{float_text}\nFiyat: {product_price:.2f}TL\n%{discount_percentage} indirim\n"
+                    title=f"Değerli Stickeri Olan Ürün!",
+                    message=f"{product_name}\nStickerlar: {stickers}\nFiyat: {product_price:.2f}TL\n%{discount_percentage} indirim\n"
                 )
                 
-                # Konsola yazdır (isim, indirim, fiyat, float değeri ve saat bilgisi)
-                print(f"{current_time} - {product_name}\n{stickers}\n{float_text}\nFiyat: {product_price:.2f}TL\n%{discount_percentage} indirim\n")
-    
-    except Exception as e:
-        print(f"Bir hata oluştu: {e}")
+                print(f"{current_time} - Sticker \n{product_name}\nStickerlar: {stickers}\nFiyat: {product_price:.2f}TL\n%{discount_percentage} indirim\n")
 
 # Program döngüsü: 10 saniyede bir sayfayı kontrol et
 while True:
-    check_for_new_products()
-    time.sleep(10)  # 10 saniye bekle ve tekrar kontrol et
+    try:
+        url = "https://listing.bynogame.net/api/listings/cs2?page=0&limit=1000"
+        response = requests.get(url)
+        data = response.json()
+        
+        products = data.get('payload', [])
+        
+        check_for_new_discount_products(products)
+        check_for_new_float_products(products)
+        check_for_sticker_products(products)
+
+    except Exception as e:
+        print(f"Bir hata oluştu: {e}")
+        
+    time.sleep(10)
+
+# mrb ben Pusat
