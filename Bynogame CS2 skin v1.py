@@ -53,3 +53,5 @@ def check_for_new_products():
 while True:
     check_for_new_products()
     time.sleep(10)  # 10 saniye bekle ve tekrar kontrol et
+
+    #    -Qrkly
