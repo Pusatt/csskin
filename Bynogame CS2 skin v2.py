@@ -134,4 +134,4 @@ while True:
     time.sleep(10)
 
 # Katkılarından dolayı Salih'e teşekkürler..
-#                                  -Pusat
+#                                  -Qrkly
