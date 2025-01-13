@@ -5,10 +5,10 @@ from plyer import notification
 from datetime import datetime
 
 ### Kullanıcı ayarları
-min_discount = 25           # Minimum indirim oranı
+min_discount = 35           # Minimum indirim oranı
 min_price = 50              # Minimum fiyat (sadece indirim oranı için)
 min_otherprice = 0          # Minimum fiyat (diğer filtreler için)
-max_price = 1000            # Maksimum fiyat (tüm filtreler için)
+max_price = 2000            # Maksimum fiyat (tüm filtreler için)
 max_float = 0.010           # Maksimum float değeri (float filtresini kapatmak için 0.00)
 min_sticker = 500           # Sticker toplam değeri bildirim eşiği
 # Daha önce görülen ürünlerin listesi
@@ -55,14 +55,13 @@ def check_for_new_float_products(products):
             
             print(f"{current_time} - Float \n{product_name}\nFloat: {float_value}\nFiyat: {product_price:.2f}TL\n%{discount_percentage} indirim\n")
 
-# Sticker fiyatını almak için fonksiyon
+# Sticker fiyatını almak için güncellenmiş fonksiyon
 def fetch_sticker_price(sticker_name):
     # Sticker adını URL dostu hale getir
     encoded_name = quote(sticker_name)
     
     # Sticker fiyatı için URL
     urll = f"https://gw.bynogame.com/steam-products/v2/products?page=1&limit=36&sort=SalesCountLastSevenDays:-1&filters=Category:Sticker;Keywords:{encoded_name};AppId:730"
-    #print(f"Sticker fiyatı çekiliyor: {urll}")  # Kontrol için URL'i yazdırın
     
     try:
         # URL'e istek gönder
@@ -70,16 +69,18 @@ def fetch_sticker_price(sticker_name):
         response.raise_for_status()  # Hatalı istekleri yakala
         dataa = response.json()
         
-        if "data" in dataa and "result" in dataa["data"] and len(dataa["data"]["result"]) > 0:
-            priceTRY = dataa["data"]["result"][0].get("priceTRY", 0)
-            #print(f"Sticker fiyatı: {priceTRY} TL")  # Kontrol için fiyatı yazdırın
-            return priceTRY
-        else: 
-            return 0  # Fiyat bulunamazsa 0 döndür
+        if "data" in dataa and "result" in dataa["data"]:
+            for result in dataa["data"]["result"]:
+                # Sticker adı marketHashName ile tam eşleşiyor mu kontrol et
+                #   print(f"marketHashName: {result.get("marketHashName", "Bilinmeyen sticker").strip().lower()} - sticker_name: {sticker_name}")
+                if result.get("marketHashName", "Bilinmeyen sticker") == sticker_name:
+                    return result.get("priceTRY", 0)  # Tam eşleşme durumunda fiyatı döndür
+        
+        return 0  # Eşleşme bulunamazsa
 
     except Exception as e:
         print(f"Sticker fiyatını çekerken hata oluştu: {e}")
-        return 0  # Fiyat bulunamazsa 0 döndür
+        return 0
 
 # Stickerları değerlendirip toplam fiyatı kontrol eden fonksiyon
 def check_for_valuable_sticker_products(products):
