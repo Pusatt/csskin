@@ -2,6 +2,7 @@ Bynogame üzerinden cs skinlerini okuyor ve istenen özelliklere sahip yeni sat�
 -Pusat
 
 CS SKINLERI ALIP SATARKEN:
+
 1-) Gösterilen fiyat gerçekten indirimli mi?
 Bazen çeşitli sebeplerden veya veri eksikliğinden referans fiyatlar internette doğru görüntülenemiyor veya ani yükseliş, düşüş, manipülasyonlar bu fiyatı saptırabiliyor. Bu sebeple ilk olarak indirim oranının gerçeği yansıtıp yansıtmadığına bakıyorum ama bunu her skine yapmak çok zaman kaybı olur. Bir yerden sonra bu bahsettiğim eksiğin hangi tür skinlerde olabileceğini öğreniyorsun mesajın devamında bahsedeceğim.
 
