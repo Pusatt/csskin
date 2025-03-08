@@ -2,6 +2,7 @@ Bynogame üzerinden cs skinlerini okuyor ve istenen özelliklere sahip yeni sat�
 
 - Pusat
 
+.
 
 CS SKINLERI ALIP SATARKEN:
 
