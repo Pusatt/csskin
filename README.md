@@ -1,5 +1,6 @@
 Bynogame üzerinden cs skinlerini okuyor ve istenen özelliklere sahip yeni satışa çıkarılan ürünleri bildirim olarak kullanıcıya gönderiyor. Detaylı filtre sayesinde istediğiniz fiyat/indirim/float değerlerine sahip ürünleri rahatlıkla bulabiliyorsunuz. Ayrıca yeni sürüm ile birlikte skinlerin üzerinde istenen değerde sticker var ise bunları da listeleyerek kullanıcıya gönderiyor. Bu sayede 10x fiyatlı sticker yapıştırılmış 3x fiyatlı silahı 2x fiyatına bulabiliyor ve herkesten önce haberdar olup hızlıca satın alabiliyorsunuz. Kodun çeşitli amaçlar ile kullanımında lütfen credit verin.
--Pusat
+
+- Pusat
 
 
 CS SKINLERI ALIP SATARKEN:
