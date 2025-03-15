@@ -14,7 +14,7 @@ from docx.oxml.ns import qn
 min_discount = 35
 min_price = 50
 min_otherprice = 0
-max_price = 3000
+max_price = 5000
 max_float = 0.010
 min_sticker = 500
 
@@ -89,7 +89,8 @@ def notify_product(title, product_name, float_value, product_price, discount_per
         title=title,
         message=message
     )
-    print(f"{current_time} - {title}\n{message}\n")
+    # Sonundaki fazladan \n kaldırıldı
+    print(f"{current_time} - {title}\n{message}")
 
 def add_to_docx(product_name, float_value, product_price, discount_percentage, product_ID, additional_info="", title=""):
     if product_ID not in seen_products_docx:
@@ -168,14 +169,17 @@ def check_for_valuable_sticker_products(products):
             total_sticker_value = sum(fetch_sticker_price(sticker.strip()) for sticker in sticker_list)
             
             if total_sticker_value >= min_sticker and min_otherprice <= product_price <= max_price:
-                notify_product("DEĞERLİ STİCKER", product_name, float_value, product_price, discount_percentage, f"Toplam: {total_sticker_value:.2f}TL")
+                # Sticker isimlerini ek bilgiye ekle
+                sticker_names = ', '.join(sticker_list)
+                additional_info = f"Stickerlar: {sticker_names}\nToplam: {total_sticker_value:.2f}TL"
+                notify_product("DEĞERLİ STİCKER", product_name, float_value, product_price, discount_percentage, additional_info)
                 add_to_docx(
                     product_name, 
                     float_value, 
                     product_price, 
                     discount_percentage, 
                     product_ID, 
-                    f"Stickerlar: {', '.join(sticker_list)}\nToplam Değer: {total_sticker_value:.2f}TL", 
+                    additional_info=additional_info, 
                     title="DEĞERLİ STİCKER"
                 )
 
@@ -193,3 +197,4 @@ while True:
         print(f"Hata: {e}")
     
     time.sleep(10)
+# Kod 200 satır olsun diye ek satır
