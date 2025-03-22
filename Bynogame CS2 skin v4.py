@@ -11,12 +11,14 @@ from docx.oxml.shared import OxmlElement
 from docx.oxml.ns import qn
 
 ### Kullanıcı ayarları
-min_discount = 35
-min_price = 50
+min_discount = 25
+min_price = 0
 min_otherprice = 0
-max_price = 5000
+max_price = 10000
 max_float = 0.010
 min_sticker = 500
+discount_keywords = ["AK-47", "AWP", "Desert Eagle", "USP-S", "M4A4", "M4A1-S", "Glock-18", "SSG 08", "Case"]  # Yeni eklenen filtre
+special_categories = ["Knife", "Gloves"]  # Yeni eklenen kategori filtresi
 
 # Kalıcı veri depolama için dosya adı
 seen_ids_file = "seen_products.txt"
@@ -89,8 +91,7 @@ def notify_product(title, product_name, float_value, product_price, discount_per
         title=title,
         message=message
     )
-    # Sonundaki fazladan \n kaldırıldı
-    print(f"{current_time} - {title}\n{message}")
+    print(f"{current_time} - {title}\n{message}\n")  # Sonuna boş satır eklendi
 
 def add_to_docx(product_name, float_value, product_price, discount_percentage, product_ID, additional_info="", title=""):
     if product_ID not in seen_products_docx:
@@ -132,8 +133,15 @@ def check_for_new_discount_products(products):
         discount_percentage = product.get('discountRate', 0)
         product_price = product.get('price', 0)
         float_value = float(product.get('info', {}).get('float', 1))
+        category = product.get('info', {}).get('category', '')  # Düzeltildi
 
-        if min_price <= product_price <= max_price and discount_percentage >= min_discount:
+        # Yeni filtreler
+        keyword_match = any(keyword.lower() in product_name.lower() for keyword in discount_keywords)
+        category_match = category in special_categories
+        price_condition = min_price <= product_price <= max_price
+        discount_condition = discount_percentage >= min_discount
+
+        if (keyword_match or category_match) and price_condition and discount_condition:
             notify_product("İNDİRİMLİ ÜRÜN", product_name, float_value, product_price, discount_percentage)
             add_to_docx(product_name, float_value, product_price, discount_percentage, product_ID, title="İNDİRİMLİ ÜRÜN")
 
@@ -197,4 +205,3 @@ while True:
         print(f"Hata: {e}")
     
     time.sleep(10)
-# Kod 200 satır olsun diye ek satır
