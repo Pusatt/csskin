@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS:GO Market Scanner</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1e1e2e;
+            color: #e2e2e2;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            background: #2a2a3a;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #6cacfc;
+            border-bottom: 1px solid #3a3a4a;
+            padding-bottom: 10px;
+        }
+        .settings-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #a0a0c0;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #3a3a4a;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #2a2a3a;
+            color: #e2e2e2;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            grid-column: span 2;
+        }
+        button:hover {
+            background-color: #3e8e41;
+        }
+        button#exportBtn {
+            background-color: #3498db;
+            margin-top: 10px;
+        }
+        button#exportBtn:hover {
+            background-color: #2980b9;
+        }
+        .results {
+            margin-top: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .product-card {
+            border-left: 4px solid #4CAF50;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #2a2a3a;
+            transition: transform 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .product-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #ffffff;
+            font-size: 16px;
+        }
+        .product-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .product-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .discount {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .float {
+            background-color: #3498db;
+            color: white;
+        }
+        .sticker {
+            background-color: #f39c12;
+            color: white;
+        }
+        .timestamp {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-align: right;
+            margin-top: 5px;
+        }
+        .additional-info {
+            font-size: 13px;
+            color: #b0b0d0;
+            margin-top: 8px;
+            padding: 8px;
+            background-color: #2a2a3a;
+            border-radius: 4px;
+            border-left: 2px solid #4CAF50;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            grid-column: span 2;
+        }
+        .running {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            border: 1px solid #2ecc71;
+        }
+        .stopped {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+        .statistics {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #2a2a3a;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-weight: bold;
+            font-size: 18px;
+            color: #4CAF50;
+        }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2a2a3a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4CAF50;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3e8e41;
+        }
+        @media (max-width: 768px) {
+            .settings-form {
+                grid-template-columns: 1fr;
+            }
+            button, .status {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>CS:2 Market Bot</h1>
+    
+    <div class="container">
+        <div class="panel">
+            <h2>Settings</h2>
+            <form id="settingsForm" class="settings-form">
+                <div class="form-group">
+                    <label for="minDiscount">Minimum Discount (%)</label>
+                    <input type="number" id="minDiscount" value="25" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label for="minPrice">Minimum Price (TRY)</label>
+                    <input type="number" id="minPrice" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="maxPrice">Maximum Price (TRY)</label>
+                    <input type="number" id="maxPrice" value="10000" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="minOtherPrice">Minimum Other Price (TRY)</label>
+                    <input type="number" id="minOtherPrice" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="maxFloat">Maximum Float Value</label>
+                    <input type="number" id="maxFloat" value="0.010" step="0.001" min="0" max="1">
+                </div>
+                <div class="form-group">
+                    <label for="minSticker">Minimum Sticker Value (TRY)</label>
+                    <input type="number" id="minSticker" value="500" min="0">
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label for="discountKeywords">Discount Keywords (comma separated)</label>
+                    <textarea id="discountKeywords" rows="2">AK-47, AWP, Desert Eagle, USP-S, M4A4, M4A1-S, Glock-18, SSG 08, Case</textarea>
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label for="specialCategories">Special Categories (comma separated)</label>
+                    <textarea id="specialCategories" rows="2">Knife, Gloves</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="scanInterval">Scan Interval (seconds)</label>
+                    <input type="number" id="scanInterval" value="10" min="5">
+                </div>
+                <button type="button" id="toggleScan">Start Scanning</button>
+                <button type="button" id="exportBtn">Export to DOCX</button>
+                <div id="status" class="status stopped">Status: Stopped</div>
+            </form>
+            
+            <div class="statistics">
+                <div class="stat-item">
+                    <div>Total Found</div>
+                    <div class="stat-value" id="totalFound">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Discount Items</div>
+                    <div class="stat-value" id="discountItems">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Low Float</div>
+                    <div class="stat-value" id="floatItems">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Valuable Stickers</div>
+                    <div class="stat-value" id="stickerItems">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>Scan Results</h2>
+            <div id="results" class="results">
+                <!-- Results will appear here -->
+                <div style="text-align: center; padding: 20px; color: #7f8c8d;">
+                    No scan results yet. Click "Start Scanning" to begin.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const toggleScanBtn = document.getElementById('toggleScan');
+        const exportBtn = document.getElementById('exportBtn');
+        const statusDiv = document.getElementById('status');
+        const resultsDiv = document.getElementById('results');
+        const settingsForm = document.getElementById('settingsForm');
+        
+        // Statistics elements
+        const totalFoundEl = document.getElementById('totalFound');
+        const discountItemsEl = document.getElementById('discountItems');
+        const floatItemsEl = document.getElementById('floatItems');
+        const stickerItemsEl = document.getElementById('stickerItems');
+        
+        // State
+        let isScanning = false;
+        let scanIntervalId = null;
+        let seenProducts = new Set();
+        let statistics = {
+            total: 0,
+            discount: 0,
+            float: 0,
+            sticker: 0
+        };
+        
+        // Mock product data
+        const mockProducts = [
+            {
+                listingNo: '1001',
+                name: 'AK-47 | Redline (Field-Tested)',
+                discountRate: 30,
+                price: 1500,
+                info: {
+                    float: 0.15,
+                    category: 'Rifle',
+                    stickerNames: 'Sticker | Team LDLC.com (Holo) | Katowice 2014, Sticker | Titan (Holo) | Katowice 2014'
+                }
+            },
+            {
+                listingNo: '1002',
+                name: 'AWP | Asiimov (Field-Tested)',
+                discountRate: 25,
+                price: 3500,
+                info: {
+                    float: 0.18,
+                    category: 'Sniper Rifle'
+                }
+            },
+            {
+                listingNo: '1003',
+                name: 'M4A4 | Howl (Minimal Wear)',
+                discountRate: 15,
+                price: 8000,
+                info: {
+                    float: 0.07,
+                    category: 'Rifle'
+                }
+            },
+            {
+                listingNo: '1004',
+                name: 'Karambit | Doppler (Factory New)',
+                discountRate: 35,
+                price: 9500,
+                info: {
+                    float: 0.01,
+                    category: 'Knife'
+                }
+            },
+            {
+                listingNo: '1005',
+                name: 'Desert Eagle | Blaze (Factory New)',
+                discountRate: 20,
+                price: 1200,
+                info: {
+                    float: 0.005,
+                    category: 'Pistol',
+                    stickerNames: 'Sticker | iBUYPOWER (Holo) | Katowice 2014'
+                }
+            },
+            {
+                listingNo: '1006',
+                name: 'USP-S | Kill Confirmed (Minimal Wear)',
+                discountRate: 28,
+                price: 800,
+                info: {
+                    float: 0.08,
+                    category: 'Pistol'
+                }
+            },
+            {
+                listingNo: '1007',
+                name: 'Glock-18 | Fade (Factory New)',
+                discountRate: 22,
+                price: 600,
+                info: {
+                    float: 0.009,
+                    category: 'Pistol'
+                }
+            },
+            {
+                listingNo: '1008',
+                name: 'SSG 08 | Dragonfire (Field-Tested)',
+                discountRate: 18,
+                price: 300,
+                info: {
+                    float: 0.25,
+                    category: 'Sniper Rifle'
+                }
+            },
+            {
+                listingNo: '1009',
+                name: 'Case Key',
+                discountRate: 40,
+                price: 50,
+                info: {
+                    category: 'Key'
+                }
+            },
+            {
+                listingNo: '1010',
+                name: 'Sport Gloves | Pandora\'s Box (Minimal Wear)',
+                discountRate: 30,
+                price: 8500,
+                info: {
+                    float: 0.12,
+                    category: 'Gloves'
+                }
+            },
+            {
+                listingNo: '1011',
+                name: 'AK-47 | Vulcan (Minimal Wear)',
+                discountRate: 15,
+                price: 2000,
+                info: {
+                    float: 0.008,
+                    category: 'Rifle',
+                    stickerNames: 'Sticker | Team Dignitas (Holo) | Katowice 2014, Sticker | Vox Eminor (Holo) | Katowice 2014'
+                }
+            }
+        ];
+        
+        // Generate random mock products
+        function generateRandomProducts(count) {
+            const weapons = ['AK-47', 'M4A4', 'AWP', 'Desert Eagle', 'USP-S', 'Glock-18', 'SSG 08', 'P250', 'Five-SeveN'];
+            const skins = ['Redline', 'Asiimov', 'Vulcan', 'Fade', 'Dragon Lore', 'Neo-Noir', 'Hyper Beast', 'Doppler', 'Marble Fade'];
+            const conditions = ['Factory New', 'Minimal Wear', 'Field-Tested', 'Well-Worn', 'Battle-Scarred'];
+            const categories = ['Rifle', 'Pistol', 'Sniper Rifle', 'SMG', 'Heavy'];
+            const stickers = [
+                'Sticker | Team LDLC.com (Holo) | Katowice 2014',
+                'Sticker | Titan (Holo) | Katowice 2014',
+                'Sticker | iBUYPOWER (Holo) | Katowice 2014',
+                'Sticker | Team Dignitas (Holo) | Katowice 2014',
+                'Sticker | Vox Eminor (Holo) | Katowice 2014',
+                'Sticker | Reason Gaming (Holo) | Katowice 2014',
+                'Sticker | Ninjas in Pyjamas (Holo) | Katowice 2014'
+            ];
+            
+            const products = [];
+            
+            for (let i = 0; i < count; i++) {
+                const weapon = weapons[Math.floor(Math.random() * weapons.length)];
+                const skin = skins[Math.floor(Math.random() * skins.length)];
+                const condition = conditions[Math.floor(Math.random() * conditions.length)];
+                const category = categories[Math.floor(Math.random() * categories.length)];
+                const hasStickers = Math.random() > 0.7;
+                
+                const product = {
+                    listingNo: `200${i}`,
+                    name: `${weapon} | ${skin} (${condition})`,
+                    discountRate: Math.floor(Math.random() * 50),
+                    price: Math.floor(Math.random() * 10000) + 100,
+                    info: {
+                        float: Math.random() * 0.5,
+                        category: category
+                    }
+                };
+                
+                if (hasStickers) {
+                    const numStickers = Math.floor(Math.random() * 3) + 1;
+                    const productStickers = [];
+                    for (let j = 0; j < numStickers; j++) {
+                        productStickers.push(stickers[Math.floor(Math.random() * stickers.length)]);
+                    }
+                    product.info.stickerNames = productStickers.join(', ');
+                }
+                
+                products.push(product);
+            }
+            
+            return products;
+        }
+        
+        // Combine fixed mock products with random ones
+        function getMockProducts() {
+            return [...mockProducts, ...generateRandomProducts(15)];
+        }
+        
+        // Update statistics display
+        function updateStatistics() {
+            totalFoundEl.textContent = statistics.total;
+            discountItemsEl.textContent = statistics.discount;
+            floatItemsEl.textContent = statistics.float;
+            stickerItemsEl.textContent = statistics.sticker;
+        }
+        
+        // Check for discounted products
+        function checkForNewDiscountProducts(products, settings) {
+            const discountKeywords = settings.discountKeywords.split(',').map(k => k.trim().toLowerCase());
+            const specialCategories = settings.specialCategories.split(',').map(c => c.trim());
+            
+            products.forEach(product => {
+                if (seenProducts.has(product.listingNo)) return;
+                
+                const productName = product.name || 'Unknown Product';
+                const discountPercentage = product.discountRate || 0;
+                const productPrice = product.price || 0;
+                const floatValue = parseFloat(product.info?.float) || 1;
+                const category = product.info?.category || '';
+                
+                // Check conditions
+                const keywordMatch = discountKeywords.some(keyword => 
+                    productName.toLowerCase().includes(keyword));
+                const categoryMatch = specialCategories.includes(category);
+                const priceCondition = settings.minPrice <= productPrice && productPrice <= settings.maxPrice;
+                const discountCondition = discountPercentage >= settings.minDiscount;
+                
+                if ((keywordMatch || categoryMatch) && priceCondition && discountCondition) {
+                    displayProduct('discount', productName, floatValue, productPrice, discountPercentage, product.listingNo);
+                    seenProducts.add(product.listingNo);
+                    statistics.total++;
+                    statistics.discount++;
+                    updateStatistics();
+                }
+            });
+        }
+        
+        // Check for low float products
+        function checkForNewFloatProducts(products, settings) {
+            products.forEach(product => {
+                if (seenProducts.has(product.listingNo)) return;
+                
+                const productName = product.name || 'Unknown Product';
+                const discountPercentage = product.discountRate || 0;
+                const productPrice = product.price || 0;
+                const floatValue = parseFloat(product.info?.float) || 1;
+                
+                if (settings.minOtherPrice <= productPrice && productPrice <= settings.maxPrice && 
+                    floatValue >= 0 && floatValue < settings.maxFloat) {
+                    displayProduct('float', productName, floatValue, productPrice, discountPercentage, product.listingNo);
+                    seenProducts.add(product.listingNo);
+                    statistics.total++;
+                    statistics.float++;
+                    updateStatistics();
+                }
+            });
+        }
+        
+        // Check for valuable sticker products
+        function checkForValuableStickerProducts(products, settings) {
+            products.forEach(product => {
+                if (seenProducts.has(product.listingNo)) return;
+                
+                const productName = product.name || 'Unknown Product';
+                const productPrice = product.price || 0;
+                const discountPercentage = product.discountRate || 0;
+                const floatValue = parseFloat(product.info?.float) || 1;
+                const stickers = product.info?.stickerNames || 'No Stickers';
+                
+                if (stickers !== 'No Stickers' && !productName.toLowerCase().includes('souvenir')) {
+                    // Calculate sticker value (mock)
+                    const stickerList = stickers.split(', ');
+                    const totalStickerValue = stickerList.length * (Math.random() * 1000 + 500); // Random high value
+                    
+                    if (totalStickerValue >= settings.minSticker && 
+                        settings.minOtherPrice <= productPrice && productPrice <= settings.maxPrice) {
+                        const stickerNames = stickerList.join(', ');
+                        const additionalInfo = `Stickers: ${stickerNames}<br>Total Value: ${totalStickerValue.toFixed(2)} TL`;
+                        displayProduct('sticker', productName, floatValue, productPrice, discountPercentage, 
+                                     product.listingNo, additionalInfo);
+                        seenProducts.add(product.listingNo);
+                        statistics.total++;
+                        statistics.sticker++;
+                        updateStatistics();
+                    }
+                }
+            });
+        }
+        
+        // Display a product in the results
+        function displayProduct(type, productName, floatValue, productPrice, discountPercentage, productId, additionalInfo = '') {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            
+            const typeClass = type === 'discount' ? 'discount' : 
+                              type === 'float' ? 'float' : 'sticker';
+            const typeText = type === 'discount' ? 'DISCOUNT' : 
+                            type === 'float' ? 'LOW FLOAT' : 'VALUABLE STICKER';
+            
+            // Remove the "no results" message if it exists
+            if (resultsDiv.children.length === 1 && resultsDiv.children[0].textContent.includes("No scan results")) {
+                resultsDiv.innerHTML = '';
+            }
+            
+            const productCard = document.createElement('div');
+            productCard.className = 'product-card';
+            productCard.innerHTML = `
+                <div class="product-type ${typeClass}">${typeText}</div>
+                <div class="product-title">${productName}</div>
+                <div class="product-info">
+                    <span>Float: ${floatValue.toFixed(6)}</span>
+                    <span>Price: ${productPrice.toFixed(2)} TL</span>
+                    <span>Discount: ${discountPercentage}%</span>
+                    <span>ID: ${productId}</span>
+                </div>
+                ${additionalInfo ? `<div class="additional-info">${additionalInfo}</div>` : ''}
+                <div class="timestamp">${timeString}</div>
+            `;
+            
+            resultsDiv.prepend(productCard);
+            
+            // Show notification
+            showNotification(`${typeText} - ${productName}`, 
+                `Float: ${floatValue.toFixed(6)}\nPrice: ${productPrice.toFixed(2)} TL\nDiscount: ${discountPercentage}%`);
+        }
+        
+        // Show browser notification
+        function showNotification(title, message) {
+            if (!("Notification" in window)) {
+                console.log("This browser does not support desktop notification");
+                return;
+            }
+            
+            if (Notification.permission === "granted") {
+                new Notification(title, { body: message });
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification(title, { body: message });
+                    }
+                });
+            }
+        }
+        
+        // Main scan function
+        async function performScan() {
+            try {
+                const settings = {
+                    minDiscount: parseFloat(document.getElementById('minDiscount').value),
+                    minPrice: parseFloat(document.getElementById('minPrice').value),
+                    maxPrice: parseFloat(document.getElementById('maxPrice').value),
+                    minOtherPrice: parseFloat(document.getElementById('minOtherPrice').value),
+                    maxFloat: parseFloat(document.getElementById('maxFloat').value),
+                    minSticker: parseFloat(document.getElementById('minSticker').value),
+                    discountKeywords: document.getElementById('discountKeywords').value,
+                    specialCategories: document.getElementById('specialCategories').value,
+                    scanInterval: parseInt(document.getElementById('scanInterval').value)
+                };
+                
+                // Fetch mock products
+                const products = getMockProducts();
+                
+                // Check for different types of products
+                checkForNewDiscountProducts(products, settings);
+                checkForNewFloatProducts(products, settings);
+                checkForValuableStickerProducts(products, settings);
+                
+            } catch (error) {
+                console.error('Scan error:', error);
+                statusDiv.textContent = `Status: Error - ${error.message}`;
+                statusDiv.className = 'status stopped';
+                isScanning = false;
+                toggleScanBtn.textContent = 'Start Scanning';
+                if (scanIntervalId) {
+                    clearInterval(scanIntervalId);
+                    scanIntervalId = null;
+                }
+            }
+        }
+        
+        // Export to DOCX (mock functionality)
+        function exportToDocx() {
+            if (seenProducts.size === 0) {
+                alert('No products to export!');
+                return;
+            }
+            
+            // In a real implementation, this would generate a DOCX file
+            // For this demo, we'll just show a message
+            alert(`Exporting ${seenProducts.size} products to DOCX file...\n\nThis would generate a Word document with all found items in a real implementation.`);
+            
+            // Here you would typically:
+            // 1. Collect all product data
+            // 2. Use a library like docx.js to generate the document
+            // 3. Trigger a download
+        }
+        
+        // Toggle scanning
+        toggleScanBtn.addEventListener('click', () => {
+            isScanning = !isScanning;
+            
+            if (isScanning) {
+                toggleScanBtn.textContent = 'Stop Scanning';
+                statusDiv.textContent = 'Status: Running - Scanning for deals...';
+                statusDiv.className = 'status running';
+                
+                // Start scanning immediately and then at intervals
+                performScan();
+                const interval = parseInt(document.getElementById('scanInterval').value) * 1000;
+                scanIntervalId = setInterval(performScan, interval);
+            } else {
+                toggleScanBtn.textContent = 'Start Scanning';
+                statusDiv.textContent = 'Status: Stopped';
+                statusDiv.className = 'status stopped';
+                
+                // Clear the interval
+                if (scanIntervalId) {
+                    clearInterval(scanIntervalId);
+                    scanIntervalId = null;
+                }
+            }
+        });
+        
+        // Export button
+        exportBtn.addEventListener('click', exportToDocx);
+        
+        // Request notification permission on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            if ("Notification" in window) {
+                Notification.requestPermission();
+            }
+        });
+    </script>
+</body>
+</html>
